@@ -1,0 +1,44 @@
+//
+// Diese Datei ist der Einstiegspunkt für das CSS
+// der Homepage. Als solche dient sie nur dazu alle
+// anderen CSS Dateien zu importieren.
+//
+
+
+// SETTINGS
+
+$ift-gruen: #89bd23;
+$ift-dunkel-gruen: #0a5527;
+$inuit-global-font-size: 18px;
+@import "../../node_modules/inuitcss/settings/settings.core";
+
+
+
+// TOOLS
+
+@import "../../node_modules/inuitcss/tools/tools.font-size";
+@import "../../node_modules/inuitcss/tools/tools.clearfix";
+
+
+
+// GENERIC
+
+@import "../../node_modules/inuitcss/generic/generic.box-sizing";
+@import "../../node_modules/inuitcss/generic/generic.normalize";
+@import "../../node_modules/inuitcss/generic/generic.shared";
+
+
+
+// ELEMENTS
+
+@import "../../node_modules/inuitcss/elements/elements.page";
+@import "../../node_modules/inuitcss/elements/elements.headings";
+@import "elements/elements.page";
+@import "elements/elements.headings";
+
+
+// COMPONENTS
+
+
+// PAGES
+
