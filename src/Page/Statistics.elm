@@ -2,6 +2,7 @@ module Page.Statistics exposing (Model, Msg, init, update, view)
 
 import Data.LimitedResult exposing (LimitedResult)
 import Data.RemoteData as RemoteData exposing (RemoteData(..))
+import Data.Statistics as Stats
 import Data.TimeEntry as TimeEntry exposing (TimeEntry)
 import Dict exposing (Dict)
 import Html exposing (Html, div, main_, text)
@@ -54,64 +55,16 @@ view model =
 -- CHART
 
 
-type alias Point =
-    { x : Float
-    , y : Float
-    }
-
-
 chart : List TimeEntry -> Html Msg
 chart entries =
-    let
-        getDay date =
-            date
-                |> String.slice -2 (String.length date)
-                |> String.toFloat
-
-        hoursPerDay ( date, entriesOfDay ) =
-            case getDay date of
-                Nothing ->
-                    Nothing
-
-                Just day ->
-                    Just
-                        { x = day
-                        , y = entriesOfDay |> List.map .hours |> List.foldl (+) 0.0
-                        }
-
-        cumulatedHoursPerDay ( date, entriesOfDay ) ( cumulated, entryPoints ) =
-            case getDay date of
-                Nothing ->
-                    ( cumulated, entryPoints )
-
-                Just day ->
-                    let
-                        hoursOfDay =
-                            entriesOfDay |> List.map .hours |> List.foldl (+) 0.0
-                    in
-                    ( cumulated + hoursOfDay
-                    , { x = day
-                      , y = cumulated + hoursOfDay
-                      }
-                        :: entryPoints
-                    )
-
-        points =
-            entries
-                |> TimeEntry.groupByDay
-                |> Dict.toList
-                |> List.filterMap hoursPerDay
-
-        ( _, cumulatedPoints ) =
-            entries
-                |> TimeEntry.groupByDay
-                |> Dict.toList
-                |> List.foldl cumulatedHoursPerDay ( 0.0, [] )
-    in
-    LineChart.view .x
-        .y
-        [ LineChart.line Colors.purpleLight Dots.circle "Stunden/Tag" points
-        , LineChart.line Colors.blueLight Dots.circle "Kum. Stunden/Tag" cumulatedPoints
+    LineChart.view .day
+        .hours
+        [ entries
+            |> Stats.hoursSpentPerDay
+            |> LineChart.line Colors.purpleLight Dots.circle "Stunden/Tag"
+        , entries
+            |> Stats.cumulatedHoursSpentPerDay
+            |> LineChart.line Colors.blueLight Dots.circle "Kum. Stunden/Tag"
         ]
 
 
