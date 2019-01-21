@@ -31,7 +31,7 @@ init session =
       }
     , Cmd.batch
         [ Cmd.map TimeEntriesLoaded <|
-            Request.Statistics.timeEntries session.http
+            Request.Statistics.timeEntries session.env.api
                 { offset = Nothing
                 , limit = Just 2000
                 }

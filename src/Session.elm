@@ -10,9 +10,11 @@ import Request.Authorization exposing (ApiKey(..))
 
 type alias Session =
     { navKey : Nav.Key
-    , http :
-        { baseUrl : String
-        , apiKey : ApiKey
+    , env :
+        { api :
+            { baseUrl : String
+            , apiKey : ApiKey
+            }
         }
     }
 

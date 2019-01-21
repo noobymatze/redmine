@@ -52,9 +52,11 @@ init flags url key =
     changeRouteTo (Route.fromUrl url) <|
         Blank
             { navKey = key
-            , http =
-                { baseUrl = flags.http.baseUrl
-                , apiKey = ApiKey flags.http.apiKey
+            , env =
+                { api =
+                    { baseUrl = flags.http.baseUrl
+                    , apiKey = ApiKey flags.http.apiKey
+                    }
                 }
             }
 

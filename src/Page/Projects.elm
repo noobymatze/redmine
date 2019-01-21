@@ -27,7 +27,7 @@ init session =
       }
     , Cmd.batch
         [ Cmd.map ProjectsLoaded <|
-            Request.Project.all session.http
+            Request.Project.all session.env.api
                 { offset = Nothing
                 , limit = Nothing
                 }
