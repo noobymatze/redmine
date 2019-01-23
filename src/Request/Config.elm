@@ -1,6 +1,9 @@
-module Request.Config exposing (Config)
+module Request.Config exposing (Config, decoder, encode)
 
-import Request.Authorization exposing (ApiKey)
+import Json.Decode as Decode exposing (Decoder, succeed)
+import Json.Decode.Pipeline as Decode exposing (required)
+import Json.Encode as Encode exposing (Value)
+import Request.ApiKey as ApiKey exposing (ApiKey)
 
 
 
@@ -11,3 +14,22 @@ type alias Config =
     { apiKey : ApiKey
     , baseUrl : String
     }
+
+
+
+-- SERIALIZATION
+
+
+encode : Config -> Value
+encode config =
+    Encode.object
+        [ ( "apiKey", ApiKey.encode config.apiKey )
+        , ( "baseUrl", Encode.string config.baseUrl )
+        ]
+
+
+decoder : Decoder Config
+decoder =
+    succeed Config
+        |> required "apiKey" ApiKey.decoder
+        |> required "baseUrl" Decode.string

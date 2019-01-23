@@ -1,5 +1,6 @@
 module Page.Projects exposing (Model, Msg, init, update, view)
 
+import Browser.Navigation as Nav
 import Data.LimitedResult exposing (LimitedResult)
 import Data.Project exposing (Project)
 import Data.RemoteData as RemoteData exposing (RemoteData(..))
@@ -16,13 +17,15 @@ import Session exposing (Session)
 
 type alias Model =
     { session : Session
+    , navKey : Nav.Key
     , projects : RemoteData (List Project)
     }
 
 
-init : Session -> ( Model, Cmd Msg )
-init session =
+init : Nav.Key -> Session -> ( Model, Cmd Msg )
+init key session =
     ( { session = session
+      , navKey = key
       , projects = Loading
       }
     , Cmd.batch

@@ -3,9 +3,12 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav exposing (Key)
 import Html exposing (Html, div, text)
+import Json.Decode as Json
+import Page.Login as Login
 import Page.Projects as Projects
 import Page.Statistics as Statistics
-import Request.Authorization exposing (ApiKey(..))
+import Ports
+import Request.ApiKey exposing (ApiKey(..))
 import Route exposing (Route(..))
 import Session exposing (Session)
 import Url exposing (Url)
@@ -33,48 +36,55 @@ main =
 
 
 type alias Flags =
-    { http :
-        { baseUrl : String
-        , apiKey : String
-        }
+    { session : Maybe String
     }
 
 
 type Model
-    = Blank Session
-    | NotFound Session
+    = Blank Nav.Key (Maybe Session)
+    | NotFound Nav.Key Session
     | Projects Projects.Model
     | Statistics Statistics.Model
+    | Login Login.Model
+    | AuthenticatedLogin Session Login.Model
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
-    changeRouteTo (Route.fromUrl url) <|
-        Blank
-            { navKey = key
-            , env =
-                { api =
-                    { baseUrl = flags.http.baseUrl
-                    , apiKey = ApiKey flags.http.apiKey
-                    }
-                }
-            }
+    let
+        maybeSession =
+            flags.session
+                |> Maybe.map (Json.decodeString Session.decoder)
+                |> Maybe.andThen Result.toMaybe
+    in
+    ( Blank key maybeSession
+    , Nav.pushUrl key <|
+        Route.toString <|
+            Maybe.withDefault Route.Login <|
+                Maybe.map (always Route.Projects) maybeSession
+    )
 
 
-toSession : Model -> Session
+toSession : Model -> ( Nav.Key, Maybe Session )
 toSession model =
     case model of
-        Blank session ->
-            session
+        Blank key maybeSession ->
+            ( key, maybeSession )
 
-        NotFound session ->
-            session
+        NotFound key session ->
+            ( key, Just session )
 
         Projects subModel ->
-            subModel.session
+            ( subModel.navKey, Just subModel.session )
 
         Statistics subModel ->
-            subModel.session
+            ( subModel.navKey, Just subModel.session )
+
+        Login subModel ->
+            ( subModel.navKey, Nothing )
+
+        AuthenticatedLogin session subModel ->
+            ( subModel.navKey, Just session )
 
 
 
@@ -84,14 +94,14 @@ toSession model =
 view : Model -> Browser.Document Msg
 view model =
     case model of
-        Blank _ ->
+        Blank _ _ ->
             { title = "Loading"
             , body =
                 [ Header.view
                 ]
             }
 
-        NotFound _ ->
+        NotFound _ _ ->
             { title = "Not found"
             , body =
                 [ Header.view
@@ -117,6 +127,22 @@ view model =
                 ]
             }
 
+        Login subModel ->
+            { title = "Login | Redmine"
+            , body =
+                [ Login.view subModel
+                    |> Html.map LoginMsg
+                ]
+            }
+
+        AuthenticatedLogin _ subModel ->
+            { title = "Login | Redmine"
+            , body =
+                [ Login.view subModel
+                    |> Html.map LoginMsg
+                ]
+            }
+
 
 
 -- UPDATE
@@ -127,31 +153,40 @@ type Msg
     | ClickedLink Browser.UrlRequest
     | ProjectsMsg Projects.Msg
     | StatisticsMsg Statistics.Msg
+    | LoginMsg Login.Msg
 
 
 changeRouteTo : Route -> Model -> ( Model, Cmd Msg )
 changeRouteTo route model =
     let
-        session =
+        ( navKey, maybeSession ) =
             toSession model
     in
-    case route of
-        Route.Issues ->
-            ( Blank session, Cmd.none )
+    case ( route, maybeSession ) of
+        ( Route.Issues, Just session ) ->
+            ( Blank navKey (Just session), Cmd.none )
 
-        Route.Issue int ->
-            ( Blank session, Cmd.none )
+        ( Route.Issue int, Just session ) ->
+            ( Blank navKey (Just session), Cmd.none )
 
-        Route.Projects ->
-            Projects.init session
+        ( Route.Projects, Just session ) ->
+            Projects.init navKey session
                 |> updateWith Projects ProjectsMsg model
 
-        Route.Statistics ->
-            Statistics.init session
+        ( Route.Statistics, Just session ) ->
+            Statistics.init navKey session
                 |> updateWith Statistics StatisticsMsg model
 
-        Route.NotFound ->
-            ( NotFound session, Cmd.none )
+        ( Route.NotFound, Just session ) ->
+            ( NotFound navKey session, Cmd.none )
+
+        ( Route.Login, _ ) ->
+            Login.init navKey
+                |> updateWith Login LoginMsg model
+
+        ( _, Nothing ) ->
+            Login.init navKey
+                |> updateWith Login LoginMsg model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -160,8 +195,12 @@ update msg model =
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
+                    let
+                        ( navKey, _ ) =
+                            toSession model
+                    in
                     ( model
-                    , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
+                    , Nav.pushUrl navKey (Url.toString url)
                     )
 
                 Browser.External href ->
@@ -179,6 +218,40 @@ update msg model =
         ( StatisticsMsg subMsg, Statistics subModel ) ->
             Statistics.update subMsg subModel
                 |> updateWith Statistics StatisticsMsg model
+
+        ( LoginMsg subMsg, Login subModel ) ->
+            let
+                ( newSubModel, subCmd, externalMsg ) =
+                    Login.update subMsg subModel
+            in
+            case externalMsg of
+                Login.Authenticated record ->
+                    let
+                        newSession =
+                            { env =
+                                { api =
+                                    { apiKey = record.apiKey
+                                    , baseUrl = record.baseUrl
+                                    }
+                                }
+                            , user = Just record.user
+                            }
+
+                        ( newModel, cmd ) =
+                            changeRouteTo Route.Projects (AuthenticatedLogin newSession newSubModel)
+                    in
+                    ( newModel
+                    , Cmd.batch
+                        [ Cmd.map LoginMsg subCmd
+                        , cmd
+                        , Ports.send (Ports.Authenticated newSession)
+                        ]
+                    )
+
+                Login.None ->
+                    ( Login newSubModel
+                    , Cmd.map LoginMsg subCmd
+                    )
 
         -- Discard any incoming message, which doesn't fit
         ( _, _ ) ->

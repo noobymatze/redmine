@@ -3,21 +3,29 @@ import './assets/stylesheets/main.scss';
 
 
 
-// CONFIG
-
-
-var httpConfig = {
-    baseUrl: null,
-    apiKey: null
-};
-
 
 
 // MAIN
 
+var maybeSession = localStorage.getItem('session');
 var app = Elm.Main.init({
   node: document.getElementById('redmine'),
   flags: {
-      http: httpConfig
+      session: maybeSession
   }
 });
+
+
+
+// PORTS
+
+
+app.ports.outgoing.subscribe(function (message) {
+    switch(message.type) {
+        case 'Authenticated':
+            localStorage.setItem('session', JSON.stringify(message));
+            break;
+    }
+})
+
+

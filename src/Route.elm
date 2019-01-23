@@ -12,7 +12,8 @@ import Url.Parser as Url exposing ((</>), s)
 
 
 type Route
-    = Issues
+    = Login
+    | Issues
     | Issue Int
     | Projects
     | Statistics
@@ -28,6 +29,7 @@ parser =
     Url.oneOf
         [ Url.map Projects Url.top
         , Url.map Issue (s "issue" </> Url.int)
+        , Url.map Login (s "login")
         , Url.map Projects (s "projects")
         , Url.map Statistics (s "statistics")
         , Url.map NotFound (s "404")
@@ -74,3 +76,6 @@ toString route =
 
         NotFound ->
             relative [ "404" ] []
+
+        Login ->
+            relative [ "login" ] []

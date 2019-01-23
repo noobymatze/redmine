@@ -1,5 +1,6 @@
 module Page.Statistics exposing (Model, Msg, init, update, view)
 
+import Browser.Navigation as Nav
 import Data.LimitedResult exposing (LimitedResult)
 import Data.RemoteData as RemoteData exposing (RemoteData(..))
 import Data.Statistics as Stats
@@ -22,12 +23,14 @@ import Session exposing (Session)
 type alias Model =
     { entries : RemoteData (List TimeEntry)
     , session : Session
+    , navKey : Nav.Key
     }
 
 
-init : Session -> ( Model, Cmd Msg )
-init session =
+init : Nav.Key -> Session -> ( Model, Cmd Msg )
+init navKey session =
     ( { entries = Loading
+      , navKey = navKey
       , session = session
       }
     , Cmd.batch

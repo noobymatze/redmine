@@ -4,7 +4,7 @@ import Data.LimitedResult as LimitedResult exposing (LimitedResult)
 import Data.RemoteData as RemoteData exposing (RemoteData)
 import Data.TimeEntry as TimeEntry exposing (TimeEntry)
 import Http
-import Request.Authorization as Auth exposing (ApiKey(..))
+import Request.ApiKey as Auth exposing (ApiKey(..))
 import Request.Config exposing (Config)
 import Url.Builder as Url
 import Url.Builder.Extra as Url

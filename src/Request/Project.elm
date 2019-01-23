@@ -5,7 +5,7 @@ import Data.Project as Project exposing (Project)
 import Data.RemoteData as RemoteData exposing (RemoteData)
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import Request.Authorization as Auth exposing (ApiKey)
+import Request.ApiKey as Auth exposing (ApiKey)
 import Request.Config exposing (Config)
 import Url.Builder as Url
 import Url.Builder.Extra as Url
