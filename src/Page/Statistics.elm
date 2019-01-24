@@ -5,6 +5,7 @@ import Data.LimitedResult exposing (LimitedResult)
 import Data.RemoteData as RemoteData exposing (RemoteData(..))
 import Data.Statistics as Stats
 import Data.TimeEntry as TimeEntry exposing (TimeEntry)
+import Date
 import Dict exposing (Dict)
 import Html exposing (Html, div, main_, text)
 import Html.Attributes exposing (class)
@@ -14,6 +15,7 @@ import LineChart.Colors as Colors
 import LineChart.Dots as Dots
 import Request.Statistics
 import Session exposing (Session)
+import Time exposing (Month(..))
 
 
 
@@ -37,7 +39,9 @@ init navKey session =
         [ Cmd.map TimeEntriesLoaded <|
             Request.Statistics.timeEntries session.env.api
                 { offset = Nothing
-                , limit = Just 2000
+                , limit = Just 100
+                , from = Date.fromCalendarDate 2019 Jan 1
+                , to = Date.fromCalendarDate 2019 Jan 31
                 }
         ]
     )
@@ -76,13 +80,13 @@ chart entries =
 
 
 type Msg
-    = TimeEntriesLoaded (RemoteData (LimitedResult TimeEntry))
+    = TimeEntriesLoaded (RemoteData (List TimeEntry))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TimeEntriesLoaded result ->
-            ( { model | entries = RemoteData.map .data result }
+            ( { model | entries = result }
             , Cmd.none
             )
