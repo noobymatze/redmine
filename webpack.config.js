@@ -19,7 +19,10 @@ module.exports = {
   },
 
   devServer: {
-    port: 8000
+    port: 8000,
+    historyApiFallback: {
+      index: 'index.html'
+    }
   },
 
   plugins: [
