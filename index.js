@@ -23,7 +23,7 @@ var app = Elm.Main.init({
 app.ports.outgoing.subscribe(function (message) {
     switch(message.type) {
         case 'Authenticated':
-            localStorage.setItem('session', JSON.stringify(message));
+            localStorage.setItem('session', JSON.stringify(message.session));
             break;
     }
 })

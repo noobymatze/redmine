@@ -5,6 +5,7 @@ import Data.RemoteData as RemoteData exposing (RemoteData)
 import Data.User as User exposing (User)
 import Http
 import Json.Decode as Decode
+import Request.ApiKey as ApiKey exposing (ApiKey(..))
 import Request.Config exposing (Config)
 import Url.Builder as Url
 
@@ -24,6 +25,7 @@ find config { login } =
 
         params =
             [ Url.string "name" login
+            , ApiKey.apiKey "key" config.apiKey
             ]
 
         url =
@@ -31,7 +33,7 @@ find config { login } =
     in
     Http.request
         { method = "GET"
-        , url = config.baseUrl
+        , url = url
         , headers = []
         , body = Http.emptyBody
         , expect = Http.expectJson identity decoder

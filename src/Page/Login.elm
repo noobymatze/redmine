@@ -5,8 +5,9 @@ import Data.User exposing (User)
 import Dict exposing (Dict)
 import Html exposing (Html, button, div, form, h1, input, label, main_, span, text)
 import Html.Attributes exposing (class, classList, name, type_, value)
-import Html.Events exposing (onInput, onSubmit)
+import Html.Events exposing (custom, onInput)
 import Http
+import Json.Decode as Json
 import Request.ApiKey exposing (ApiKey(..))
 import Request.Users
 import Validate exposing (Validator, ifBlank)
@@ -75,7 +76,7 @@ view model =
     main_
         [ class "page page--login" ]
         [ h1 [] [ text "Redmine | Login" ]
-        , div
+        , form
             [ class "form form--login" ]
             [ field "Base URL"
                 "base-url"
@@ -112,7 +113,9 @@ view model =
                 ]
             , div
                 [ class "form__field form__buttons" ]
-                [ button [ onSubmit Submit ] [ text "Sign in" ]
+                [ button
+                    [ custom "click" (Json.succeed { message = Submit, stopPropagation = False, preventDefault = True }) ]
+                    [ text "Sign in" ]
                 ]
             ]
         ]
