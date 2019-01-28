@@ -4,6 +4,7 @@ import Browser
 import Browser.Navigation as Nav exposing (Key)
 import Html exposing (Html, div, text)
 import Json.Decode as Json
+import Page.Issues as Issues
 import Page.Login as Login
 import Page.Projects as Projects
 import Page.Statistics as Statistics
@@ -45,6 +46,7 @@ type Model
     | NotFound Nav.Key Session
     | Projects Projects.Model
     | Statistics Statistics.Model
+    | Issues Issues.Model
     | Login Login.Model
     | AuthenticatedLogin Session Login.Model
 
@@ -85,6 +87,11 @@ toSession model =
 
         AuthenticatedLogin session subModel ->
             ( subModel.navKey, Just session )
+
+        Issues subModel ->
+            ( subModel.navKey
+            , Just subModel.session
+            )
 
 
 
@@ -143,6 +150,15 @@ view model =
                 ]
             }
 
+        Issues subModel ->
+            { title = "Issues | Redmine"
+            , body =
+                [ Header.view
+                , Issues.view subModel
+                    |> Html.map IssuesMsg
+                ]
+            }
+
 
 
 -- UPDATE
@@ -153,6 +169,7 @@ type Msg
     | ClickedLink Browser.UrlRequest
     | ProjectsMsg Projects.Msg
     | StatisticsMsg Statistics.Msg
+    | IssuesMsg Issues.Msg
     | LoginMsg Login.Msg
 
 
@@ -164,7 +181,8 @@ changeRouteTo route model =
     in
     case ( route, maybeSession ) of
         ( Route.Issues, Just session ) ->
-            ( Blank navKey (Just session), Cmd.none )
+            Issues.init navKey session
+                |> updateWith Issues IssuesMsg model
 
         ( Route.Issue int, Just session ) ->
             ( Blank navKey (Just session), Cmd.none )
@@ -218,6 +236,10 @@ update msg model =
         ( StatisticsMsg subMsg, Statistics subModel ) ->
             Statistics.update subMsg subModel
                 |> updateWith Statistics StatisticsMsg model
+
+        ( IssuesMsg subMsg, Issues subModel ) ->
+            Issues.update subMsg subModel
+                |> updateWith Issues IssuesMsg model
 
         ( LoginMsg subMsg, Login subModel ) ->
             let

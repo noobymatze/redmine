@@ -28,6 +28,7 @@ parser : Url.Parser (Route -> a) a
 parser =
     Url.oneOf
         [ Url.map Projects Url.top
+        , Url.map Issues (s "issues")
         , Url.map Issue (s "issue" </> Url.int)
         , Url.map Login (s "login")
         , Url.map Projects (s "projects")
@@ -63,7 +64,7 @@ toString : Route -> String
 toString route =
     case route of
         Issues ->
-            relative [] []
+            relative [ "issues" ] []
 
         Issue int ->
             relative [ "issues", String.fromInt int ] []
