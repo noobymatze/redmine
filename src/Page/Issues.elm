@@ -4,7 +4,8 @@ import Browser.Navigation as Nav
 import Data.Issue as Issue exposing (Issue)
 import Data.LimitedResult exposing (LimitedResult)
 import Data.RemoteData exposing (RemoteData(..))
-import Html exposing (Html, a, div, h2, li, main_, text, ul)
+import Date
+import Html exposing (Html, a, div, h2, h3, li, main_, span, text, ul)
 import Html.Attributes exposing (class, href)
 import Request.Issues
 import Request.Issues.Filter as Filter exposing (emptyFilter)
@@ -71,7 +72,7 @@ viewIssue session issue =
     in
     li
         []
-        [ h2
+        [ h3
             [ class "issue__subject" ]
             [ a
                 [ Issue.href session.env.api issue ]
@@ -83,6 +84,20 @@ viewIssue session issue =
                         , issue.subject
                         ]
                 ]
+            ]
+        , div
+            [ class "issue__meta" ]
+            [ text <| "from " ++ issue.author.name
+            , case Date.fromIsoString (String.slice 0 10 issue.updatedOn) of
+                Err err ->
+                    Debug.log err <|
+                        span
+                            [ class "hidden" ]
+                            []
+
+                Ok value ->
+                    text <| ", " ++ Date.format "MMMM ddd, y" value
+            , text <| " - " ++ issue.project.name
             ]
         , div
             [ class "issue__description" ]

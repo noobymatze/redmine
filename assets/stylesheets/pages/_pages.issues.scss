@@ -4,6 +4,23 @@
 }
 
 
-.page--issues .issues {
+.issues {
   list-style: none;
+}
+
+
+.issues {
+
+  li {
+    margin-bottom: $inuit-global-spacing-unit * 2;
+  }
+
+}
+
+.issue__subject {
+
+  a {
+    text-decoration: none;
+  }
+
 }
