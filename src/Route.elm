@@ -15,6 +15,7 @@ type Route
     = Login
     | Issues
     | Issue Int
+    | Time
     | Projects
     | Statistics
     | NotFound
@@ -30,6 +31,7 @@ parser =
         [ Url.map Projects Url.top
         , Url.map Issues (s "issues")
         , Url.map Issue (s "issue" </> Url.int)
+        , Url.map Time (s "time")
         , Url.map Login (s "login")
         , Url.map Projects (s "projects")
         , Url.map Statistics (s "statistics")
@@ -77,6 +79,9 @@ toString route =
 
         NotFound ->
             relative [ "404" ] []
+
+        Time ->
+            relative [ "time" ] []
 
         Login ->
             relative [ "login" ] []

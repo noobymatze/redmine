@@ -21,6 +21,7 @@ view =
                     []
                     [ li [] [ a [ Route.href Projects ] [ text "Projects" ] ]
                     , li [] [ a [ Route.href Issues ] [ text "Issues" ] ]
+                    , li [] [ a [ Route.href Time ] [ text "Time" ] ]
                     , li [] [ a [ Route.href Statistics ] [ text "Statistics" ] ]
                     ]
                 ]

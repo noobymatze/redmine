@@ -8,6 +8,7 @@ import Page.Issues as Issues
 import Page.Login as Login
 import Page.Projects as Projects
 import Page.Statistics as Statistics
+import Page.Time as Time
 import Ports
 import Request.ApiKey exposing (ApiKey(..))
 import Route exposing (Route(..))
@@ -49,6 +50,7 @@ type Model
     | Issues Issues.Model
     | Login Login.Model
     | AuthenticatedLogin Session Login.Model
+    | Time Time.Model
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
@@ -89,6 +91,11 @@ toSession model =
             ( subModel.navKey, Just session )
 
         Issues subModel ->
+            ( subModel.navKey
+            , Just subModel.session
+            )
+
+        Time subModel ->
             ( subModel.navKey
             , Just subModel.session
             )
@@ -159,6 +166,15 @@ view model =
                 ]
             }
 
+        Time subModel ->
+            { title = "Issues | Redmine"
+            , body =
+                [ Header.view
+                , Time.view subModel
+                    |> Html.map TimeMsg
+                ]
+            }
+
 
 
 -- UPDATE
@@ -171,6 +187,7 @@ type Msg
     | StatisticsMsg Statistics.Msg
     | IssuesMsg Issues.Msg
     | LoginMsg Login.Msg
+    | TimeMsg Time.Msg
 
 
 changeRouteTo : Route -> Model -> ( Model, Cmd Msg )
@@ -183,6 +200,10 @@ changeRouteTo route model =
         ( Route.Issues, Just session ) ->
             Issues.init navKey session
                 |> updateWith Issues IssuesMsg model
+
+        ( Route.Time, Just session ) ->
+            Time.init navKey session
+                |> updateWith Time TimeMsg model
 
         ( Route.Issue int, Just session ) ->
             ( Blank navKey (Just session), Cmd.none )
@@ -240,6 +261,10 @@ update msg model =
         ( IssuesMsg subMsg, Issues subModel ) ->
             Issues.update subMsg subModel
                 |> updateWith Issues IssuesMsg model
+
+        ( TimeMsg subMsg, Time subModel ) ->
+            Time.update subMsg subModel
+                |> updateWith Time TimeMsg model
 
         ( LoginMsg subMsg, Login subModel ) ->
             let

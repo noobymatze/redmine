@@ -1,6 +1,7 @@
 module Data.Issue exposing (Issue, decoder, href)
 
 import Data.Project.Ref as Project
+import Data.User.Ref as User
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Json.Decode as Decode exposing (Decoder, succeed)
@@ -19,6 +20,7 @@ type alias Issue =
     { id : Int
     , project : Project.Ref
     , subject : String
+    , author : User.Ref
     , description : String
     , startDate : String
     , doneRatio : Int
@@ -47,6 +49,7 @@ decoder =
         |> required "id" Decode.int
         |> required "project" Project.decoder
         |> required "subject" Decode.string
+        |> required "author" User.decoder
         |> required "description" Decode.string
         |> required "start_date" Decode.string
         |> required "done_ratio" Decode.int
